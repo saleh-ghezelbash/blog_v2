@@ -43,7 +43,7 @@ export class CategoryService {
         .leftJoinAndSelect('cat.posts','post')
         .leftJoinAndSelect('post.user', 'user')
         .andWhere('cat.id = :id', { id })
-        .select(['cat','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover','user.id', 'user.name'])
+        .select(['cat','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
         .getOne();
       }
     

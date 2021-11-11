@@ -29,7 +29,7 @@ export class TagService {
         .leftJoinAndSelect('tag.posts','post')
         .leftJoinAndSelect('post.user', 'user')
         .andWhere('tag.id = :id', { id })
-        .select(['tag','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover','user.id', 'user.name'])
+        .select(['tag','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
         .getOne();
       }
     

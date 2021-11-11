@@ -27,6 +27,11 @@ export class User {
     @Column()
     aboutMe: string;
 
+    @Column({
+        default:"./images/user-profile.jpg"
+    })
+    photo:string;
+
     @Column('enum', { enum: UserRoleEnum, default: UserRoleEnum.USER })
     role: UserRoleEnum;
 

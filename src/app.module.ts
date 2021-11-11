@@ -16,6 +16,9 @@ import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { MulterModule } from '@nestjs/platform-express';
 
 
 @Module({
@@ -34,6 +37,14 @@ import { ConfigModule } from '@nestjs/config';
     // entities: [join(__dirname, '/../**/**.entity{.ts,.js}')],
     entities: [Tag, Post, Cat, Comment, User]
   }), 
+  // ServeStaticModule.forRoot({
+  //   rootPath: join(__dirname, '..', 'public'),
+  // }),
+  MulterModule.register({
+    // dest: './public/images',
+    // limits: { fieldSize: 1, fileSize: 1 }
+
+  }),
   TagModule, CommentModule, CategoryModule, PostModule, UserModule, AuthModule, MailModule],
   controllers: [],
   providers: [

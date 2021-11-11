@@ -20,6 +20,7 @@ export class Post {
     content: string;
 
     @Column()
+    // imageCover: Buffer;
     imageCover: string;
 
     @Column({

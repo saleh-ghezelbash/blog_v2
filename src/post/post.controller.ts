@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseFilters, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Put, UploadedFile, UseFilters, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { PostService } from './post.service';
 import { Post as PostEntity } from './post.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -11,6 +11,8 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('post')
 // @UseFilters(new HttpExceptionFilter())
@@ -21,15 +23,22 @@ export class PostController {
     @Post()
     @UseGuards(AuthGuard('jwt'),RolesGuard)
     @Roles(UserRoleEnum.PUBLISHER,UserRoleEnum.ADMIN)
+    @UseInterceptors(FileInterceptor('imageCover'))
     create(
-        @Body(ValidationPipe) createPostDto: CreatePostDto,
-        @GetUser() user: User
-    ): Promise<PostEntity> {
+        @Body(ValidationPipe) createPostDto,
+        @GetUser() user: User,
+        @UploadedFile() file: Express.Multer.File
+    )
+    : Promise<PostEntity>
+     {
+        console.log('file:',file);
+        
         // console.log('dto:', createPostDto);
 
         return this.postService.create(
             createPostDto,
-            user
+            user,
+            file
         );
     }
 
@@ -41,6 +50,12 @@ export class PostController {
     @Get(':id')
     findOne(@Param('id') id: string): Promise<PostEntity> {
         return this.postService.findOne(id);
+    }
+
+    @Get(':id/image')
+    // @Header('Content-Type','image/*')
+    findPostImage(@Param('id') id: string){
+        return this.postService.findPostImage(id);
     }
 
     @Delete(':id')

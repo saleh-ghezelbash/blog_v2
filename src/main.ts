@@ -7,5 +7,6 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
   await app.listen(9000);
+  // console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

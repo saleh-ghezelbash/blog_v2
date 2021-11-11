@@ -44,7 +44,7 @@ export class PostService {
     // return await this.postsRepository.find();
     return await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'user.id', 'user.name'])
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
       .getMany();
@@ -90,6 +90,12 @@ export class PostService {
       .getOne()
   }
 
+  async findPostImage(id:string){
+    let photo = await this.postsRepository.findOne(id,{select:['imageCover']});
+ 
+    return 'data:image/jpeg;base64,' + photo.imageCover
+  }
+
   // async create(
   //     createPostDto: CreatePostDto,
   //     // user: User
@@ -113,8 +119,13 @@ export class PostService {
 
   async create(
     createPostDto: CreatePostDto,
-    user: User
+    user: User,
+    file: Express.Multer.File
   ): Promise<Post> {
+
+    if (file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
+    }
 
     if (await this.postsRepository.findOne({ where: { title: createPostDto.title } })) {
       throw new BadRequestException("Post Title must be unique!")
@@ -127,9 +138,9 @@ export class PostService {
 
     try {
       // const tags = await this.tagRepository.findByIds(updatePostDto.tagIds);
-      const tags = await this.tagRepository.createQueryBuilder("tag")
-        .where("tag.id IN (:...ids)", { ids: createPostDto.tagIds })
-        .getMany();
+      // const tags = await this.tagRepository.createQueryBuilder("tag")
+      //   .where("tag.id IN (:...ids)", { ids: createPostDto.tagIds })
+      //   .getMany();
 
       // const tags: Tag[] = [];
       // createPostDto.tagIds.forEach(async t => {
@@ -138,8 +149,11 @@ export class PostService {
       const p = this.postsRepository.create(createPostDto);
 
       p.category = cat;
-      p.tags = tags;
+      // p.tags = tags;
       p.user = user;
+      // p.imageCover = file.buffer;
+      var bufferBase64 = Buffer.from( file.buffer).toString('base64');
+      p.imageCover = bufferBase64;
 
       const post = await this.postsRepository.save(p);
 
@@ -251,6 +265,7 @@ export class PostService {
     return this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.category', 'cat')
       .andWhere('cat.id = :id', { id: post.category.id })
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
       .limit(5)
       .getMany();
   }

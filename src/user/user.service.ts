@@ -16,7 +16,7 @@ export class UserService {
     // return this.usersRepository.find();
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
-      // .select(['user.id','user.name','user.email','user.role','post.id','post.title','post.slug','post.imageCover','post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getMany();
   }
 
@@ -28,7 +28,7 @@ export class UserService {
       .leftJoinAndSelect('post.comments', 'comment')
       // .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
       .andWhere('user.id = :id', { id })
-      // .select(['post','cat.title','tag.title'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
       .getOne()
 
   }
@@ -48,21 +48,27 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
+  async updateUser(updateUserDto: UpdateUserDto, file: Express.Multer.File): Promise<User> {
 
     const u = await this.usersRepository.findOne(updateUserDto.id);
     if (!u) {
       throw new BadRequestException("User not found!");
     }
 
+    if (file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
+    }
+
     try {
       const user = this.usersRepository.create(updateUserDto);
+      user.photo = file.filename;
       await this.usersRepository.save(user);
       // return this.findOne(updateUserDto.id.toString());
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .leftJoinAndSelect('post.comments', 'comment')
         .andWhere('user.id = :id', { id: updateUserDto.id.toString() })
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
         .getOne()
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -74,7 +80,7 @@ export class UserService {
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'post.id', 'post.title', 'post.slug', 'post.imageCover', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getOne();
   }
 
@@ -93,7 +99,7 @@ export class UserService {
 
   }
 
-  async updateProfile(user: User, updateProfileDto: UpdateProfileDto): Promise<User> {
+  async updateProfile(user: User, updateProfileDto: UpdateProfileDto, file: Express.Multer.File): Promise<User> {
 
     const us = await this.usersRepository.findOne(user.id);
     if (!us) {
@@ -103,14 +109,15 @@ export class UserService {
     try {
       const u = this.usersRepository.create({
         id: user.id,
-        ...updateProfileDto
+        ...updateProfileDto,
+        photo: file.filename
       });
       await this.usersRepository.save(u);
       // return this.findOne(user.id.toString());
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .andWhere('user.id = :id', { id: user.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.imageCover', 'post.createdAt'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
         .getOne();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -127,7 +134,7 @@ export class UserService {
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id: user.id.toString() })
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.imageCover', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getOne();
   }
 }
