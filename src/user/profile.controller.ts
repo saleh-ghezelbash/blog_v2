@@ -32,22 +32,22 @@ export class ProfileController {
 
   @Put()
   @UseGuards(AuthGuard('jwt'))
-  @UseInterceptors(FileInterceptor('photo', {
-    storage: diskStorage({
-      destination: Helper.userProfileDestinationPath,
-      filename: Helper.userProfileCustomFileName
-    }),
-    fileFilter: Helper.multerFilter,
-  }))
+  // @UseInterceptors(FileInterceptor('photo', {
+  //   storage: diskStorage({
+  //     destination: Helper.userProfileDestinationPath,
+  //     filename: Helper.userProfileCustomFileName
+  //   }),
+  //   fileFilter: Helper.multerFilter,
+  // }))
   updateProfile(@GetUser() user: User,
     @Body() updateProfileDto: UpdateProfileDto,
-    @UploadedFile() file: Express.Multer.File
+    // @UploadedFile() file: Express.Multer.File
   ) {
-    if (file.size > 1000000) {
-      throw new BadRequestException('Maximom valid image size is 1Mb!')
-    }
+    // if (file.size > 1000000) {
+    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
+    // }
     // console.log('file::', file);
     // console.log('dto:', updateProfileDto);
-    return this.userService.updateProfile(user, updateProfileDto,file);
+    return this.userService.updateProfile(user, updateProfileDto);
   }
 }

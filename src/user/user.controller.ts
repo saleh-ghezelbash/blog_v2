@@ -34,18 +34,18 @@ export class UserController {
   }
 
   @Put()
-  @UseInterceptors(FileInterceptor('photo', {
-    storage: diskStorage({
-      destination: Helper.userProfileDestinationPath,
-      filename: Helper.userProfileCustomFileName
-    }),
-    fileFilter: Helper.multerFilter,
-  }))
+  // @UseInterceptors(FileInterceptor('photo', {
+  //   storage: diskStorage({
+  //     destination: Helper.userProfileDestinationPath,
+  //     filename: Helper.userProfileCustomFileName
+  //   }),
+  //   fileFilter: Helper.multerFilter,
+  // }))
   updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto,
-    @UploadedFile() file: Express.Multer.File
+    // @UploadedFile() file: Express.Multer.File
   ): Promise<User> {
  
     // console.log('file::', file);
-    return this.userService.updateUser(updateUserDto, file);
+    return this.userService.updateUser(updateUserDto);
   }
 }

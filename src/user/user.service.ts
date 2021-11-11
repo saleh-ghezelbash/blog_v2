@@ -48,20 +48,20 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto, file: Express.Multer.File): Promise<User> {
+  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
 
     const u = await this.usersRepository.findOne(updateUserDto.id);
     if (!u) {
       throw new BadRequestException("User not found!");
     }
 
-    if (file.size > 1000000) {
-      throw new BadRequestException('Maximom valid image size is 1Mb!')
-    }
+    // if (file.size > 1000000) {
+    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
+    // }
 
     try {
       const user = this.usersRepository.create(updateUserDto);
-      user.photo = file.filename;
+      // user.photo = file.filename;
       await this.usersRepository.save(user);
       // return this.findOne(updateUserDto.id.toString());
       return await this.usersRepository.createQueryBuilder('user')
@@ -99,7 +99,7 @@ export class UserService {
 
   }
 
-  async updateProfile(user: User, updateProfileDto: UpdateProfileDto, file: Express.Multer.File): Promise<User> {
+  async updateProfile(user: User, updateProfileDto: UpdateProfileDto): Promise<User> {
 
     const us = await this.usersRepository.findOne(user.id);
     if (!us) {
@@ -110,7 +110,7 @@ export class UserService {
       const u = this.usersRepository.create({
         id: user.id,
         ...updateProfileDto,
-        photo: file.filename
+        // photo: file.filename
       });
       await this.usersRepository.save(u);
       // return this.findOne(user.id.toString());
