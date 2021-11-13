@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Put, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
+import { SearchPostDto } from 'src/post/dtos/search-post.dto';
 import { Helper } from 'src/shared/helper';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { User } from './user.entity';
@@ -14,14 +15,14 @@ export class ProfileController {
 
 
   @Get(':id')
-  findProfile(@Param('id') id: string): Promise<User> {
-    return this.userService.findProfile(id);
+  findProfile(@Param('id') id: string,@Query() filters: SearchPostDto){
+    return this.userService.findProfile(id,filters);
   }
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  myProfile(@GetUser() user: User): Promise<User> {
-    return this.userService.myProfile(user);
+  myProfile(@GetUser() user: User,@Query() filters: SearchPostDto){
+    return this.userService.myProfile(user,filters);
   }
 
   @Delete()

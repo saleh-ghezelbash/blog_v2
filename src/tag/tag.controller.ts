@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { SearchPostDto } from 'src/post/dtos/search-post.dto';
 import { UserRoleEnum } from 'src/user/user.entity';
 import { CreateTagDto } from './dtos/create-tag.dto';
 import { Tag } from './tag.entity';
@@ -28,8 +29,8 @@ export class TagController {
       }
     
       @Get(':id')
-      findOne(@Param('id') id: string): Promise<Tag> {
-        return this.tagService.findOne(id);
+      findOne(@Param('id') id: string,@Query() filters: SearchPostDto){
+        return this.tagService.findOne(id,filters);
       }
     
       @Delete(':id')

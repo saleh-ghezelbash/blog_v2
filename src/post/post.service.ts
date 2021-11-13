@@ -10,6 +10,7 @@ import { User, UserRoleEnum } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { CreateCommenttDto } from './dtos/create-comment.dto';
 import { CreatePostDto } from './dtos/create-post.dto';
+import { SearchPostDto, SortedByEnum } from './dtos/search-post.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { Post } from './post.entity';
 
@@ -40,14 +41,29 @@ export class PostService {
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
   }
 
-  async findAll(): Promise<Post[]> {
+
+  async findAll(filters: SearchPostDto){
     // return await this.postsRepository.find();
-    return await this.postsRepository.createQueryBuilder('post')
+
+    // return await this.postsRepository.createQueryBuilder('post')
+    //   .leftJoinAndSelect('post.user', 'user')
+    //   .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
+    //   .loadRelationCountAndMap('post.commentCount', 'post.comments')
+    //   .orderBy('post.createdAt', 'DESC')
+    //   .getMany();
+
+    const q = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
-      .getMany();
+
+      const result = await this.filters(q,filters);
+
+      return {
+        items: result[0],
+        totalResult: result[1]
+      }
 
     // return this.postsRepository.find({
     //   relations:['category','comments']
@@ -72,6 +88,22 @@ export class PostService {
 
   }
 
+  filters(query,filters: SearchPostDto){
+    filters.page = !!filters.page ? filters.page : 1;
+    const skip = (filters.page - 1) * 10;
+    filters.search = !!filters.search ? filters.search : "";
+    filters.sortBy = !!filters.sortBy ? filters.sortBy : SortedByEnum.createdAt;
+
+    return query.andWhere("post.title like :title", { title: `%${filters.search}%` })
+      .orWhere("post.content like :content", { content: `%${filters.search}%` })
+      .orWhere("user.name like :userName", { userName: `%${filters.search}%` })
+      // .select(fields)
+      .orderBy(`post.${filters.sortBy}`, 'DESC')//override prev orderby
+      .skip(skip)
+      .take(10)
+      .getManyAndCount();
+  }
+
   async findOne(id: string): Promise<Post> {
     // return this.postsRepository.findOne(id);
 
@@ -82,7 +114,7 @@ export class PostService {
       .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
       .leftJoinAndSelect('comment.user', 'commentUser')
       .andWhere('post.id = :id', { id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'user.id', 'user.name'
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'user.id', 'user.name','user.aboutMe'
         , 'cat.id', 'cat.title', 'tag.id', 'tag.title', 'comment.id', 'comment.content', 'comment.createdAt',
         'commentUser.id', 'commentUser.name'
       ])
@@ -90,10 +122,27 @@ export class PostService {
       .getOne()
   }
 
-  async findPostImage(id:string){
-    let photo = await this.postsRepository.findOne(id,{select:['imageCover']});
- 
-    return 'data:image/jpeg;base64,' + photo.imageCover
+  async findPostImage(id: string, res) {
+    let photo = await this.postsRepository.findOne(id, { select: ['imageCover'] });
+
+    // return photo
+    // return 'data:image/jpeg;base64,' + photo.imageCover
+    // const img_base64 = 'dataimage/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
+
+
+    // Extract image data
+    const m = /^data:(.+?);base64,(.+)$/.exec(photo.imageCover)
+    // const m = /^data:(.+?);base64,(.+)$/.exec(img_base64)
+    if (!m) throw new Error(`Not a base64 image [${photo.imageCover}]`)
+    const [_, content_type, file_base64] = m
+    const file = Buffer.from(file_base64, 'base64')
+
+    res.writeHead(200, {
+      'Content-Type': content_type,
+      'Content-Length': file.length
+    });
+    res.end(file);
+    // return file
   }
 
   // async create(
@@ -152,7 +201,7 @@ export class PostService {
       // p.tags = tags;
       p.user = user;
       // p.imageCover = file.buffer;
-      var bufferBase64 = Buffer.from( file.buffer).toString('base64');
+      var bufferBase64 = Buffer.from(file.buffer).toString('base64');
       p.imageCover = bufferBase64;
 
       const post = await this.postsRepository.save(p);

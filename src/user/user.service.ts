@@ -1,5 +1,7 @@
 import { BadRequestException, HttpCode, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SearchPostDto, SortedByEnum } from 'src/post/dtos/search-post.dto';
+import { Post } from 'src/post/post.entity';
 import { Repository } from 'typeorm';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -10,26 +12,61 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Post)
+    private postsRepository: Repository<Post>,
   ) { }
 
   async findAll(): Promise<User[]> {
     // return this.usersRepository.find();
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getMany();
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string, filters: SearchPostDto) {
     // return this.usersRepository.findOne(id);
 
-    return await this.usersRepository.createQueryBuilder('user')
-      .leftJoinAndSelect('user.posts', 'post')
-      .leftJoinAndSelect('post.comments', 'comment')
-      // .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
+    // return await this.usersRepository.createQueryBuilder('user')
+    //   .leftJoinAndSelect('user.posts', 'post')
+    //   .leftJoinAndSelect('post.comments', 'comment')
+    //   // .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
+    //   .andWhere('user.id = :id', { id })
+    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+    //   .getOne()
+
+    const userResult = await this.usersRepository.createQueryBuilder('user')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe'])
       .getOne()
+
+
+    const postsQuery = await this.postsRepository.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: id })
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .loadRelationCountAndMap('post.commentCount', 'post.comments')
+      .orderBy('post.createdAt', 'DESC')
+
+    filters.page = !!filters.page ? filters.page : 1;
+    const skip = (filters.page - 1) * 10;
+    filters.search = !!filters.search ? filters.search : "";
+    filters.sortBy = !!filters.sortBy ? filters.sortBy : SortedByEnum.createdAt;
+
+    const postsResult = await postsQuery.andWhere("post.title like :title", { title: `%${filters.search}%` })
+      .orWhere("post.content like :content", { content: `%${filters.search}%` })
+      // .select(fields)
+      .orderBy(`post.${filters.sortBy}`, 'DESC')//override prev orderby
+      .skip(skip)
+      .take(10)
+      .getManyAndCount();
+
+    return {
+      ...userResult,
+      posts: {
+        items: postsResult[0],
+        totalResult: postsResult[1]
+      }
+    }
 
   }
 
@@ -68,7 +105,7 @@ export class UserService {
         .leftJoinAndSelect('user.posts', 'post')
         .leftJoinAndSelect('post.comments', 'comment')
         .andWhere('user.id = :id', { id: updateUserDto.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
         .getOne()
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -76,12 +113,46 @@ export class UserService {
 
   }
 
-  async findProfile(id: string): Promise<User> {
-    return await this.usersRepository.createQueryBuilder('user')
-      .leftJoinAndSelect('user.posts', 'post')
+  async findProfile(id: string, filters: SearchPostDto) {
+    // return await this.usersRepository.createQueryBuilder('user')
+    //   .leftJoinAndSelect('user.posts', 'post')
+    //   .andWhere('user.id = :id', { id })
+    //   .select(['user.id', 'user.name', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+    //   .getOne();
+
+    const userResult = await this.usersRepository.createQueryBuilder('user')
+      // .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name','user.aboutMe'])
       .getOne();
+
+
+    const postsQuery = await this.postsRepository.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: id })
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .loadRelationCountAndMap('post.commentCount', 'post.comments')
+      .orderBy('post.createdAt', 'DESC')
+
+    filters.page = !!filters.page ? filters.page : 1;
+    const skip = (filters.page - 1) * 10;
+    filters.search = !!filters.search ? filters.search : "";
+    filters.sortBy = !!filters.sortBy ? filters.sortBy : SortedByEnum.createdAt;
+
+    const postsResult = await postsQuery.andWhere("post.title like :title", { title: `%${filters.search}%` })
+      .orWhere("post.content like :content", { content: `%${filters.search}%` })
+      // .select(fields)
+      .orderBy(`post.${filters.sortBy}`, 'DESC')//override prev orderby
+      .skip(skip)
+      .take(10)
+      .getManyAndCount();
+
+    return {
+      ...userResult,
+      posts: {
+        items: postsResult[0],
+        totalResult: postsResult[1]
+      }
+    }
   }
 
   async deleteProfile(user: User): Promise<string> {
@@ -117,24 +188,60 @@ export class UserService {
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .andWhere('user.id = :id', { id: user.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
         .getOne();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async myProfile(user: User): Promise<User> {
+  async myProfile(user: User, filters: SearchPostDto) {
     const us = await this.usersRepository.findOne(user.id);
     if (!us) {
       throw new BadRequestException("User not found!");
     }
 
     // return this.findOne(user.id.toString());
-    return await this.usersRepository.createQueryBuilder('user')
-      .leftJoinAndSelect('user.posts', 'post')
+
+    // return await this.usersRepository.createQueryBuilder('user')
+    //   .leftJoinAndSelect('user.posts', 'post')
+    //   .andWhere('user.id = :id', { id: user.id.toString() })
+    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+    //   .getOne();
+
+    const userResult = await this.usersRepository.createQueryBuilder('user')
+      // .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id: user.id.toString() })
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe'])
       .getOne();
+
+
+    const postsQuery = await this.postsRepository.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: user.id.toString() })
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .loadRelationCountAndMap('post.commentCount', 'post.comments')
+      .orderBy('post.createdAt', 'DESC')
+
+    filters.page = !!filters.page ? filters.page : 1;
+    const skip = (filters.page - 1) * 10;
+    filters.search = !!filters.search ? filters.search : "";
+    filters.sortBy = !!filters.sortBy ? filters.sortBy : SortedByEnum.createdAt;
+
+    const postsResult = await postsQuery.andWhere("post.title like :title", { title: `%${filters.search}%` })
+      .orWhere("post.content like :content", { content: `%${filters.search}%` })
+      // .select(fields)
+      .orderBy(`post.${filters.sortBy}`, 'DESC')//override prev orderby
+      .skip(skip)
+      .take(10)
+      .getManyAndCount();
+
+    return {
+      ...userResult,
+      posts: {
+        items: postsResult[0],
+        totalResult: postsResult[1]
+      }
+    }
+
   }
 }

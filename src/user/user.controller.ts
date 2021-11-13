@@ -1,10 +1,11 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { SearchPostDto } from 'src/post/dtos/search-post.dto';
 import { Helper } from 'src/shared/helper';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { User, UserRoleEnum } from './user.entity';
@@ -24,8 +25,8 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<User> {
-    return this.userService.findOne(id);
+  findOne(@Param('id') id: string,@Query() filters: SearchPostDto){
+    return this.userService.findOne(id,filters);
   }
 
   @Delete(':id')
