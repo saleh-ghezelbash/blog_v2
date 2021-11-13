@@ -51,4 +51,16 @@ export class ProfileController {
     // console.log('dto:', updateProfileDto);
     return this.userService.updateProfile(user, updateProfileDto);
   }
+
+  @Put(':userId/follow')
+  @UseGuards(AuthGuard('jwt'))
+  follow(@Param('userId') userId: string,@GetUser() user: User){
+    return this.userService.follow(userId,user);
+  }
+
+  @Put(':userId/unfollow')
+  @UseGuards(AuthGuard('jwt'))
+  unFollow(@Param('userId') userId: string,@GetUser() user: User){
+    return this.userService.unFollow(userId,user);
+  }
 }

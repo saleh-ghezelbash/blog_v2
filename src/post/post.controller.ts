@@ -28,17 +28,16 @@ export class PostController {
     create(
         @Body(ValidationPipe) createPostDto,
         @GetUser() user: User,
-        @UploadedFile() file: Express.Multer.File
+        // @UploadedFile() file: Express.Multer.File
     )
         : Promise<PostEntity> {
-        console.log('file:', file);
 
         // console.log('dto:', createPostDto);
 
         return this.postService.create(
             createPostDto,
             user,
-            file
+            // file
         );
     }
 
@@ -102,6 +101,32 @@ export class PostController {
     @Get(':id/relatedPost')
     relatedPost(@Param('id') id: string): Promise<PostEntity[]> {
         return this.postService.relatedPost(id);
+    }
+
+    @Put(':postId/like')
+    @UseGuards(AuthGuard('jwt'))
+    like(
+        @Param('postId') postId: string,
+        @GetUser() user: User
+    ): Promise<string> {
+
+        return this.postService.like(
+            postId,
+            user
+        );
+    }
+
+    @Put(':postId/dislike')
+    @UseGuards(AuthGuard('jwt'))
+    disLike(
+        @Param('postId') postId: string,
+        @GetUser() user: User
+    ): Promise<string> {
+
+        return this.postService.disLike(
+            postId,
+            user
+        );
     }
 }
 

@@ -73,4 +73,10 @@ export class User {
     @Column({ type: 'bool', width: 1 })
     verified:boolean;
 
+    @Column("simple-array")
+    followers:number[];
+
+    @Column("simple-array")
+    following:number[];
+
 }

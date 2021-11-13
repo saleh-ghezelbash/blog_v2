@@ -68,4 +68,10 @@ export class Post {
       this.slug = slugify(this.title,{lower:true});
       this.modifiedAt = new Date();
     }
+
+    @Column("simple-array")
+    likes:number[];
+
+    @Column("simple-array")
+    disLikes:number[];
 }

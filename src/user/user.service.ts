@@ -1,4 +1,4 @@
-import { BadRequestException, HttpCode, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, HttpCode, HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SearchPostDto, SortedByEnum } from 'src/post/dtos/search-post.dto';
 import { Post } from 'src/post/post.entity';
@@ -20,7 +20,7 @@ export class UserService {
     // return this.usersRepository.find();
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
-      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.followers','user.following', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getMany();
   }
 
@@ -37,7 +37,7 @@ export class UserService {
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.followers','user.following'])
       .getOne()
 
 
@@ -105,7 +105,7 @@ export class UserService {
         .leftJoinAndSelect('user.posts', 'post')
         .leftJoinAndSelect('post.comments', 'comment')
         .andWhere('user.id = :id', { id: updateUserDto.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
         .getOne()
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -121,9 +121,8 @@ export class UserService {
     //   .getOne();
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
-      // .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name','user.aboutMe'])
+      .select(['user.id', 'user.name', 'user.aboutMe','user.following','user.followers'])
       .getOne();
 
 
@@ -188,7 +187,7 @@ export class UserService {
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .andWhere('user.id = :id', { id: user.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
         .getOne();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -212,9 +211,14 @@ export class UserService {
     const userResult = await this.usersRepository.createQueryBuilder('user')
       // .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id: user.id.toString() })
-      .select(['user.id', 'user.name', 'user.email', 'user.role','user.aboutMe'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following'])
       .getOne();
 
+    const followers = await this.usersRepository.findByIds(userResult.followers,
+      { select: ['id', 'name'] })
+
+    const following = await this.usersRepository.findByIds(userResult.following,
+      { select: ['id', 'name'] })
 
     const postsQuery = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: user.id.toString() })
@@ -237,10 +241,67 @@ export class UserService {
 
     return {
       ...userResult,
+      following,
+      followers,
       posts: {
         items: postsResult[0],
         totalResult: postsResult[1]
       }
+    }
+
+  }
+
+
+  async follow(userId, user) {
+    const u = await this.usersRepository.findOne(userId);
+    if (!u) {
+      throw new BadRequestException("User not found!");
+    }
+    if (userId == user.id) {
+      throw new UnauthorizedException("You can not Follow yourself!");
+    }
+
+    try {
+      if (!u.following.includes(user.id.toString())) {
+        u.following.push(user.id.toString());
+      }
+
+      if (!user.followers.includes(u.id.toString())) {
+        user.followers.push(u.id.toString());
+      }
+
+      await this.usersRepository.save(u);
+      await this.usersRepository.save(user);
+      return 'ok!';
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+
+  }
+
+  async unFollow(userId, user) {
+    const u = await this.usersRepository.findOne(userId);
+    if (!u) {
+      throw new BadRequestException("User not found!");
+    }
+    if (userId == user.id) {
+      throw new UnauthorizedException("You can not UnFollow yourself!");
+    }
+
+    try {
+      if (u.following.includes(user.id.toString())) {
+        u.following = u.following.filter(id => id.toString() !== user.id.toString());
+      }
+
+      if (user.followers.includes(u.id.toString())) {
+        user.followers = user.followers.filter(id => id.toString() !== u.id.toString());
+      }
+
+      await this.usersRepository.save(u);
+      await this.usersRepository.save(user);
+      return 'ok!';
+    } catch (error) {
+      throw new InternalServerErrorException();
     }
 
   }

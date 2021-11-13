@@ -42,7 +42,7 @@ export class PostService {
   }
 
 
-  async findAll(filters: SearchPostDto){
+  async findAll(filters: SearchPostDto) {
     // return await this.postsRepository.find();
 
     // return await this.postsRepository.createQueryBuilder('post')
@@ -54,16 +54,16 @@ export class PostService {
 
     const q = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'user.id', 'user.name'])
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','post.likes','post.disLikes', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 
-      const result = await this.filters(q,filters);
+    const result = await this.filters(q, filters);
 
-      return {
-        items: result[0],
-        totalResult: result[1]
-      }
+    return {
+      items: result[0],
+      totalResult: result[1]
+    }
 
     // return this.postsRepository.find({
     //   relations:['category','comments']
@@ -88,7 +88,7 @@ export class PostService {
 
   }
 
-  filters(query,filters: SearchPostDto){
+  filters(query, filters: SearchPostDto) {
     filters.page = !!filters.page ? filters.page : 1;
     const skip = (filters.page - 1) * 10;
     filters.search = !!filters.search ? filters.search : "";
@@ -114,7 +114,7 @@ export class PostService {
       .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
       .leftJoinAndSelect('comment.user', 'commentUser')
       .andWhere('post.id = :id', { id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'user.id', 'user.name','user.aboutMe'
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover','post.likes','post.disLikes', 'user.id', 'user.name', 'user.aboutMe'
         , 'cat.id', 'cat.title', 'tag.id', 'tag.title', 'comment.id', 'comment.content', 'comment.createdAt',
         'commentUser.id', 'commentUser.name'
       ])
@@ -169,12 +169,12 @@ export class PostService {
   async create(
     createPostDto: CreatePostDto,
     user: User,
-    file: Express.Multer.File
+    // file: Express.Multer.File
   ): Promise<Post> {
 
-    if (file.size > 1000000) {
-      throw new BadRequestException('Maximom valid image size is 1Mb!')
-    }
+    // if (file.size > 1000000) {
+    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
+    // }
 
     if (await this.postsRepository.findOne({ where: { title: createPostDto.title } })) {
       throw new BadRequestException("Post Title must be unique!")
@@ -186,7 +186,7 @@ export class PostService {
     }
 
     try {
-      // const tags = await this.tagRepository.findByIds(updatePostDto.tagIds);
+      const tags = await this.tagRepository.findByIds(createPostDto.tagIds);
       // const tags = await this.tagRepository.createQueryBuilder("tag")
       //   .where("tag.id IN (:...ids)", { ids: createPostDto.tagIds })
       //   .getMany();
@@ -198,11 +198,11 @@ export class PostService {
       const p = this.postsRepository.create(createPostDto);
 
       p.category = cat;
-      // p.tags = tags;
+      p.tags = tags;
       p.user = user;
       // p.imageCover = file.buffer;
-      var bufferBase64 = Buffer.from(file.buffer).toString('base64');
-      p.imageCover = bufferBase64;
+      // var bufferBase64 = Buffer.from(file.buffer).toString('base64');
+      // p.imageCover = bufferBase64;
 
       const post = await this.postsRepository.save(p);
 
@@ -314,8 +314,63 @@ export class PostService {
     return this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.category', 'cat')
       .andWhere('cat.id = :id', { id: post.category.id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','post.likes','post.disLikes'])
       .limit(5)
       .getMany();
+  }
+
+  async like(postId, user) {
+    const post = await this.postsRepository.findOne(postId,{relations:['user']});
+    if (!post) {
+      throw new BadRequestException("Post not found!");
+    }
+    if (this.ensureOwnerShip(user, post)) {
+      throw new UnauthorizedException("You can not Like on your own Post!");
+    }
+
+    user.id = user.id.toString();
+    try {
+      if (!post.likes.includes(user.id)) {
+        post.likes.push(user.id);
+      }
+
+      if (post.disLikes.includes(user.id)) {
+        post.disLikes = post.disLikes.filter(userId => userId !== user.id);
+      }
+
+      await this.postsRepository.save(post);
+      return 'ok!';
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+
+  }
+
+  async disLike(postId, user) {
+    const post = await this.postsRepository.findOne(postId,{relations:['user']});
+    if (!post) {
+      throw new BadRequestException("Post not found!");
+    }
+
+    if (this.ensureOwnerShip(user, post)) {
+      throw new UnauthorizedException("You can not DisLike on your own Post!");
+    }
+
+    user.id = user.id.toString();
+    try {
+      if (!post.disLikes.includes(user.id)) {
+        post.disLikes.push(user.id);
+      }
+
+      if (post.likes.includes(user.id)) {
+        post.likes = post.likes.filter(userId => userId !== user.id);
+      }
+
+      await this.postsRepository.save(post);
+      return 'ok!';
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+
   }
 }
