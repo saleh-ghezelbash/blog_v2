@@ -20,20 +20,18 @@ import { SearchPostDto } from './dtos/search-post.dto';
 export class PostController {
     constructor(private readonly postService: PostService) { }
 
+    
+
     // @UsePipes(new ValidationPipe({groups:['create']}))
     @Post()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(UserRoleEnum.PUBLISHER, UserRoleEnum.ADMIN)
     @UseInterceptors(FileInterceptor('imageCover'))
     create(
-        @Body(ValidationPipe) createPostDto,
+        @Body(new ValidationPipe({whitelist: true})) createPostDto: CreatePostDto,
         @GetUser() user: User,
         // @UploadedFile() file: Express.Multer.File
-    )
-        : Promise<PostEntity> {
-
-        // console.log('dto:', createPostDto);
-
+    ): Promise<PostEntity> {
         return this.postService.create(
             createPostDto,
             user,
@@ -41,8 +39,15 @@ export class PostController {
         );
     }
 
+        
+
+    @Get('most-popular-post')
+    mostPopularPosts(){
+       return this.postService.mostPopularPosts();
+    }
+
     @Get()
-    findAll(@Query() filters: SearchPostDto)
+    findAll(@Query(new ValidationPipe()) filters: SearchPostDto)
     {
         return this.postService.findAll(filters);
     }
@@ -72,21 +77,21 @@ export class PostController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(UserRoleEnum.PUBLISHER, UserRoleEnum.ADMIN)
     update(
-        @Body(ValidationPipe) updatePostDto: UpdatePostDto,
+        @Body(new ValidationPipe({whitelist: true})) updatePostDto: UpdatePostDto,
         @GetUser() user: User
     ) {
-
         return this.postService.update(
             updatePostDto,
             user
         );
     }
+    
 
     @Post(':postId/comment')
     @UseGuards(AuthGuard('jwt'))
     createComment(
         @Param('postId') postId: string,
-        @Body(ValidationPipe) createCommenttDto: CreateCommenttDto,
+        @Body(new ValidationPipe({whitelist: true})) createCommenttDto: CreateCommenttDto,
         @GetUser() user: User
     ): Promise<string> {
         // console.log('dto:', createPostDto);
@@ -97,6 +102,8 @@ export class PostController {
             user
         );
     }
+
+  
 
     @Get(':id/relatedPost')
     relatedPost(@Param('id') id: string): Promise<PostEntity[]> {
@@ -115,6 +122,7 @@ export class PostController {
             user
         );
     }
+    
 
     @Put(':postId/dislike')
     @UseGuards(AuthGuard('jwt'))
@@ -128,6 +136,24 @@ export class PostController {
             user
         );
     }
+
+    // @Post(':postId/bookmark')
+    // @UseGuards(AuthGuard('jwt'))
+    // bookmark(
+    //     @Param('postId') postId: string,
+    //     @Query('action') action,
+    //     @GetUser() user: User
+    // ): Promise<string> {
+    //     console.log('action:', action);
+
+    //     return this.postService.bookmark(
+    //         postId,
+    //         action,
+    //         user
+    //     );
+    // }
+
+  
 }
 
 

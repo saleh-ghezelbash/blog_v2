@@ -2,6 +2,7 @@ import { Comment } from 'src/comment/comment.entity';
 import { Post } from 'src/post/post.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import * as crypto from 'crypto';
+import { Bookmark } from 'src/bookmark/bookmark.entity';
 
 export enum UserRoleEnum {
     ADMIN = 'ادمین',
@@ -40,6 +41,9 @@ export class User {
 
     @OneToMany(() => Comment, (comment) => comment.user)
     comments: Comment[]
+
+    @OneToMany(() => Bookmark, (bookmark) => bookmark.user)
+    bookmarks: Bookmark[]
 
     // This works just for output JSON Response
     toJSON() {

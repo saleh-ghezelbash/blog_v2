@@ -1,9 +1,10 @@
 import slugify from 'slugify';
+import { Bookmark } from 'src/bookmark/bookmark.entity';
 import { Cat } from 'src/category/category.entity';
 import { Comment } from 'src/comment/comment.entity';
 import { Tag } from 'src/tag/tag.entity';
 import { User } from 'src/user/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, ManyToMany, JoinColumn, JoinTable, RelationCount, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, ManyToMany, JoinColumn, JoinTable, RelationCount, BeforeInsert, BeforeUpdate, OneToOne } from 'typeorm';
 
 @Entity()
 export class Post {
@@ -37,11 +38,12 @@ export class Post {
     @ManyToOne(() => Cat, category => category.posts,{onDelete:'SET NULL'})
     @JoinColumn({name:'categoryId'})
     category: Cat;
-    
-    
 
     @ManyToOne(() => User, user => user.posts,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     user: User;
+
+    @OneToOne(() => Bookmark, bookmark => bookmark.post)
+    bookmark: Bookmark;
 
     @ManyToMany(() => Tag, tag => tag.posts,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     @JoinTable({ name: 'post_tag' })

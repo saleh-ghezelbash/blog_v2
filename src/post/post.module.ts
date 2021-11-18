@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Bookmark } from 'src/bookmark/bookmark.entity';
 import { Cat } from 'src/category/category.entity';
 import { CategoryModule } from 'src/category/category.module';
 import { Comment } from 'src/comment/comment.entity';
@@ -14,7 +15,7 @@ import { Post } from './post.entity';
 import { PostService } from './post.service';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Post,Cat,Tag,Comment,User])],
+  imports:[TypeOrmModule.forFeature([Post,Cat,Tag,Comment,User,Bookmark])],
   controllers: [PostController],
   providers: [PostService,
     // {

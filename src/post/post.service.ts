@@ -1,6 +1,7 @@
 import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import slugify from 'slugify';
+import { Bookmark } from 'src/bookmark/bookmark.entity';
 import { Cat } from 'src/category/category.entity';
 import { CategoryService } from 'src/category/category.service';
 import { Comment } from 'src/comment/comment.entity';
@@ -24,7 +25,9 @@ export class PostService {
     @InjectRepository(Tag)
     private tagRepository: Repository<Tag>,
     @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>
+    private commentRepository: Repository<Comment>,
+    @InjectRepository(Bookmark)
+    private bookmarkRepository: Repository<Bookmark>
   ) { }
 
   private ensureOwnerShip(user: User, post: Post): boolean {
@@ -54,7 +57,7 @@ export class PostService {
 
     const q = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','post.likes','post.disLikes', 'user.id', 'user.name'])
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 
@@ -114,7 +117,7 @@ export class PostService {
       .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
       .leftJoinAndSelect('comment.user', 'commentUser')
       .andWhere('post.id = :id', { id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover','post.likes','post.disLikes', 'user.id', 'user.name', 'user.aboutMe'
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'post.likes', 'post.disLikes', 'user.id', 'user.name', 'user.aboutMe'
         , 'cat.id', 'cat.title', 'tag.id', 'tag.title', 'comment.id', 'comment.content', 'comment.createdAt',
         'commentUser.id', 'commentUser.name'
       ])
@@ -314,13 +317,13 @@ export class PostService {
     return this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.category', 'cat')
       .andWhere('cat.id = :id', { id: post.category.id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','post.likes','post.disLikes'])
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes'])
       .limit(5)
       .getMany();
   }
 
   async like(postId, user) {
-    const post = await this.postsRepository.findOne(postId,{relations:['user']});
+    const post = await this.postsRepository.findOne(postId, { relations: ['user'] });
     if (!post) {
       throw new BadRequestException("Post not found!");
     }
@@ -347,7 +350,7 @@ export class PostService {
   }
 
   async disLike(postId, user) {
-    const post = await this.postsRepository.findOne(postId,{relations:['user']});
+    const post = await this.postsRepository.findOne(postId, { relations: ['user'] });
     if (!post) {
       throw new BadRequestException("Post not found!");
     }
@@ -373,4 +376,38 @@ export class PostService {
     }
 
   }
+
+  async mostPopularPosts() {
+
+    let m = await this.postsRepository.createQueryBuilder('post')
+      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes'])
+      .getMany();
+
+    return m.sort((a, b) => {
+      return b.likes.length - a.likes.length;
+    })
+      .slice(0, 5)
+  }
+
+  // async bookmark(postId:string,action,user:User){
+  //   const post = await this.postsRepository.findOne(postId);
+  //   if (!post) {
+  //     throw new BadRequestException("Post not found!");
+  //   }
+
+  //   try {
+  //     const bookmark = this.bookmarkRepository.create();
+  //     if(action == 'do'){
+  //       bookmark.bookmark = true;
+  //     }else if(action == 'undo'){
+  //       bookmark.bookmark = false;
+  //     }
+  //     bookmark.post = post;
+  //     bookmark.user = user;
+  //     await this.bookmarkRepository.save(bookmark);
+  //     return 'ok';
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error.message);
+  //   }
+  // }
 }

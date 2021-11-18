@@ -19,6 +19,8 @@ import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MulterModule } from '@nestjs/platform-express';
+import { BookmarkModule } from './bookmark/bookmark.module';
+import { Bookmark } from './bookmark/bookmark.entity';
 
 
 @Module({
@@ -35,7 +37,7 @@ import { MulterModule } from '@nestjs/platform-express';
     database: 'blogv2',
     synchronize: true,
     // entities: [join(__dirname, '/../**/**.entity{.ts,.js}')],
-    entities: [Tag, Post, Cat, Comment, User]
+    entities: [Tag, Post, Cat, Comment, User,Bookmark]
   }), 
   // ServeStaticModule.forRoot({
   //   rootPath: join(__dirname, '..', 'public'),
@@ -45,7 +47,7 @@ import { MulterModule } from '@nestjs/platform-express';
     // limits: { fieldSize: 1, fileSize: 1 }
 
   }),
-  TagModule, CommentModule, CategoryModule, PostModule, UserModule, AuthModule, MailModule],
+  TagModule, CommentModule, CategoryModule, PostModule, UserModule, AuthModule, MailModule, BookmarkModule],
   controllers: [],
   providers: [
     // {
