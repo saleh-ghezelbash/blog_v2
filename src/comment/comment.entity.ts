@@ -1,6 +1,6 @@
 import { Post } from "src/post/post.entity";
 import { User } from "src/user/user.entity";
-import { BeforeInsert, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Comment {
@@ -21,6 +21,13 @@ export class Comment {
 
     @ManyToOne(type => User, user => user.comments,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     user: User;
+
+    @ManyToOne(() => Comment,comment => comment.childs,{onDelete:"CASCADE",onUpdate:"CASCADE"})
+    parent:Comment;
+
+    @OneToMany(() => Comment, comment => comment.parent)
+    @JoinColumn({name:"parentId"})
+    childs:Comment[];
 
     @BeforeInsert()
     beforeIn(){

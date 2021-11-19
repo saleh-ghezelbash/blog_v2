@@ -41,10 +41,10 @@ export class PostController {
 
         
 
-    @Get('most-popular-post')
-    mostPopularPosts(){
-       return this.postService.mostPopularPosts();
-    }
+    // @Get('most-popular-post')
+    // mostPopularPosts(){
+    //    return this.postService.mostPopularPosts();
+    // }
 
     @Get()
     findAll(@Query(new ValidationPipe()) filters: SearchPostDto)
@@ -91,10 +91,9 @@ export class PostController {
     @UseGuards(AuthGuard('jwt'))
     createComment(
         @Param('postId') postId: string,
-        @Body(new ValidationPipe({whitelist: true})) createCommenttDto: CreateCommenttDto,
+        @Body(new ValidationPipe()) createCommenttDto: CreateCommenttDto,
         @GetUser() user: User
     ): Promise<string> {
-        // console.log('dto:', createPostDto);
 
         return this.postService.createComment(
             postId,
@@ -152,6 +151,14 @@ export class PostController {
     //         user
     //     );
     // }
+
+    @Get(':postId/comment')
+    getComments(
+        @Param('postId') postId,
+        @Query('commentId') commentId
+    ){
+        return this.postService.getComments(postId,commentId);
+    }
 
   
 }

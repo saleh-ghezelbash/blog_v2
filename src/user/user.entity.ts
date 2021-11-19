@@ -29,6 +29,7 @@ export class User {
     aboutMe: string;
 
     @Column({
+        select:false,
         // default:"./images/user-profile.jpg"
     })
     photo:string;

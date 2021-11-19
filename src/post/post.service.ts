@@ -287,25 +287,47 @@ export class PostService {
     createCommenttDto: CreateCommenttDto,
     user: User
   ): Promise<string> {
-    const post = await this.postsRepository.findOne(postId);
+    const post = await this.postsRepository.findOne(postId, { relations: ['user'] });
     if (!post) {
       throw new BadRequestException("Post not found!");
     }
 
-    const p = await this.findOne(postId);
-    if (user.role != UserRoleEnum.ADMIN && this.ensureOwnerShip(user, p)) {
-      throw new UnauthorizedException("You can not Comment for your own Post!");
+    if (!createCommenttDto.parent_id) {
+      // const p = await this.findOne(postId);
+      if (user.role != UserRoleEnum.ADMIN && this.ensureOwnerShip(user, post)) {
+        throw new UnauthorizedException("You can not Comment for your own Post!");
+      }
+
+      try {
+        const comment = this.commentRepository.create(createCommenttDto);
+        comment.parent = null;
+        comment.post = post;
+        comment.user = user;
+        await this.commentRepository.save(comment);
+        return 'ok';
+      } catch (error) {
+        throw new InternalServerErrorException(error.message);
+      }
+
+    } else {
+
+      const parentComment = await this.commentRepository.findOne(createCommenttDto.parent_id);
+      if (!parentComment) {
+        throw new BadRequestException("Parent comment not found!");
+      }
+
+      try {
+        const comment = this.commentRepository.create(createCommenttDto);
+        comment.parent = parentComment;
+        comment.post = post;
+        comment.user = user;
+        await this.commentRepository.save(comment);
+        return 'ok';
+      } catch (error) {
+        throw new InternalServerErrorException(error.message);
+      }
     }
 
-    try {
-      const comment = this.commentRepository.create(createCommenttDto);
-      comment.post = post;
-      comment.user = user;
-      await this.commentRepository.save(comment);
-      return 'ok';
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
-    }
   }
 
   async relatedPost(id: string): Promise<Post[]> {
@@ -410,4 +432,31 @@ export class PostService {
   //     throw new InternalServerErrorException(error.message);
   //   }
   // }
+
+  async getComments(postId,commentId){
+    const post = await this.postsRepository.findOne(postId);
+    if (!post) {
+      throw new BadRequestException("Post not found!");
+    }
+
+    if (!commentId) {
+      return this.commentRepository.createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.post','post')
+      .leftJoinAndSelect('comment.parent','parent')
+      .where('post.id = :postId',{postId})
+      .andWhere('parent.id IS NULL')
+      .andWhere('comment.isApproved = :isApproved', { isApproved: true })
+      .getManyAndCount();
+    } else {
+      return this.commentRepository.createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.post','post')
+      .leftJoinAndSelect('comment.parent','parent')
+      .leftJoinAndSelect('comment.user','user')
+      .select(['comment','post.id','post.title','post.slug','post.createdAt','parent','user.id','user.name','user.photo'])
+      .where('post.id = :postId',{postId})
+      .andWhere('parent.id = :parentId',{parentId:commentId})
+      .andWhere('comment.isApproved = :isApproved', { isApproved: true })
+      .getManyAndCount();
+    }
+  }
 }

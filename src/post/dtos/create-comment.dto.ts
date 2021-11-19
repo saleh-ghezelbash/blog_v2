@@ -6,4 +6,6 @@ export class CreateCommenttDto{
     @MinLength(1,{message:"Minimom characters for Content is 1!"})
     @MaxLength(2000,{message:"Maximom characters for Content is 2000!"})
     content: string;
+    
+    parent_id:number;
 }
