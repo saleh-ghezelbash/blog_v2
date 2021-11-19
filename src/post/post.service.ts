@@ -443,6 +443,8 @@ export class PostService {
       return this.commentRepository.createQueryBuilder('comment')
       .leftJoinAndSelect('comment.post','post')
       .leftJoinAndSelect('comment.parent','parent')
+      .leftJoinAndSelect('comment.user','user')
+      .select(['comment','post.id','post.title','post.slug','post.createdAt','parent','user.id','user.name','user.photo'])
       .where('post.id = :postId',{postId})
       .andWhere('parent.id IS NULL')
       .andWhere('comment.isApproved = :isApproved', { isApproved: true })

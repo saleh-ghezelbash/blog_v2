@@ -1,6 +1,7 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Put, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { SearchPostDto } from 'src/post/dtos/search-post.dto';
@@ -33,23 +34,19 @@ export class ProfileController {
 
   @Put()
   @UseGuards(AuthGuard('jwt'))
-  // @UseInterceptors(FileInterceptor('photo', {
-  //   storage: diskStorage({
-  //     destination: Helper.userProfileDestinationPath,
-  //     filename: Helper.userProfileCustomFileName
-  //   }),
-  //   fileFilter: Helper.multerFilter,
-  // }))
+  @UseInterceptors(FileInterceptor('photo', {
+    storage: diskStorage({
+      destination: Helper.userProfileDestinationPath,
+      filename: Helper.userProfileCustomFileName
+    }),
+    fileFilter: Helper.multerFilter,
+  }))
   updateProfile(@GetUser() user: User,
-    @Body() updateProfileDto: UpdateProfileDto,
-    // @UploadedFile() file: Express.Multer.File
+    @Body(ValidationPipe) updateProfileDto: UpdateProfileDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
   ) {
-    // if (file.size > 1000000) {
-    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
-    // }
-    // console.log('file::', file);
-    // console.log('dto:', updateProfileDto);
-    return this.userService.updateProfile(user, updateProfileDto);
+    return this.userService.updateProfile(user, updateProfileDto,file,req);
   }
 
   @Put(':userId/follow')

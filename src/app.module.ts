@@ -39,9 +39,9 @@ import { Bookmark } from './bookmark/bookmark.entity';
     // entities: [join(__dirname, '/../**/**.entity{.ts,.js}')],
     entities: [Tag, Post, Cat, Comment, User,Bookmark]
   }), 
-  // ServeStaticModule.forRoot({
-  //   rootPath: join(__dirname, '..', 'public'),
-  // }),
+  ServeStaticModule.forRoot({
+    rootPath: join(__dirname, '..', 'files'),
+  }),
   MulterModule.register({
     // dest: './public/images',
     // limits: { fieldSize: 1, fileSize: 1 }

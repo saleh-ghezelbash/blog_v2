@@ -28,7 +28,7 @@ export class AuthService {
 
         const user = await this.userRipository.findOne({
             where: { email, verified: true },
-            select: ['id', 'name', 'email', 'password']
+            select: ['id', 'name', 'email', 'password','photo']
         })
 
         if (user && await bcrypt.compare(password, user.password)) {
@@ -65,11 +65,12 @@ export class AuthService {
         }
 
         const hash_password = await bcrypt.hash(password, 10);
-
+        let photoFullPath = `${req.protocol}://${req.get('host')}/images/users/user-profile.jpg`;
         const user = this.userRipository.create({
             name,
             email,
-            password: hash_password
+            password: hash_password,
+            photo: photoFullPath
         });
 
         const t = crypto.randomBytes(32).toString('hex');

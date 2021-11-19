@@ -15,6 +15,6 @@ export class Helper {
     }
 
     static userProfileDestinationPath(req, file, cb) {
-        cb(null, './public/images/user_profile_images')
+        cb(null, './files/images/users/photos')
     }
 }

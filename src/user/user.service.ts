@@ -1,5 +1,6 @@
 import { BadRequestException, HttpCode, HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Request } from 'express';
 import { SearchPostDto, SortedByEnum } from 'src/post/dtos/search-post.dto';
 import { Post } from 'src/post/post.entity';
 import { Repository } from 'typeorm';
@@ -20,7 +21,7 @@ export class UserService {
     // return this.usersRepository.find();
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.followers','user.following', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following', 'user.photo','post.id', 'post.title', 'post.slug', 'post.createdAt'])
       .getMany();
   }
 
@@ -37,7 +38,7 @@ export class UserService {
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.followers','user.following'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following','user.photo'])
       .getOne()
 
 
@@ -85,19 +86,30 @@ export class UserService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
-
+  async updateUser(
+    updateUserDto: UpdateUserDto,
+    file: Express.Multer.File,
+    req: Request,
+  ): Promise<User> {
     const u = await this.usersRepository.findOne(updateUserDto.id);
     if (!u) {
       throw new BadRequestException("User not found!");
     }
 
-    // if (file.size > 1000000) {
-    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
-    // }
+    if (!!file && file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
+    }
+
+    let photoFullPath = "";
+    if (!!file) {
+       photoFullPath =`${req.protocol}://${req.get('host')}/images/users/photos/${file.filename}`;
+    }else{
+      photoFullPath = u.photo;
+    }
 
     try {
       const user = this.usersRepository.create(updateUserDto);
+      user.photo = photoFullPath;
       // user.photo = file.filename;
       await this.usersRepository.save(user);
       // return this.findOne(updateUserDto.id.toString());
@@ -105,7 +117,7 @@ export class UserService {
         .leftJoinAndSelect('user.posts', 'post')
         .leftJoinAndSelect('post.comments', 'comment')
         .andWhere('user.id = :id', { id: updateUserDto.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.photo', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
         .getOne()
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -122,7 +134,7 @@ export class UserService {
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
       .andWhere('user.id = :id', { id })
-      .select(['user.id', 'user.name', 'user.aboutMe','user.following','user.followers'])
+      .select(['user.id', 'user.name', 'user.aboutMe', 'user.following', 'user.followers','user.photo'])
       .getOne();
 
 
@@ -169,17 +181,34 @@ export class UserService {
 
   }
 
-  async updateProfile(user: User, updateProfileDto: UpdateProfileDto): Promise<User> {
+  async updateProfile(
+    user: User,
+    updateProfileDto: UpdateProfileDto,
+    file: Express.Multer.File,
+    req: Request,
+  ): Promise<User> {
 
     const us = await this.usersRepository.findOne(user.id);
     if (!us) {
       throw new BadRequestException("User not found!");
     }
 
+    if (!!file && file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
+    }
+
     try {
+      let photoFullPath = "";
+      if (!!file) {
+         photoFullPath =`${req.protocol}://${req.get('host')}/images/users/photos/${file.filename}`;
+      }else{
+        photoFullPath = us.photo;
+      }
+
       const u = this.usersRepository.create({
         id: user.id,
         ...updateProfileDto,
+        photo: photoFullPath
         // photo: file.filename
       });
       await this.usersRepository.save(u);
@@ -187,7 +216,7 @@ export class UserService {
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .andWhere('user.id = :id', { id: user.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.photo', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
         .getOne();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -211,7 +240,7 @@ export class UserService {
     const userResult = await this.usersRepository.createQueryBuilder('user')
       // .leftJoinAndSelect('user.posts', 'post')
       .andWhere('user.id = :id', { id: user.id.toString() })
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following','user.photo'])
       .getOne();
 
     const followers = await this.usersRepository.findByIds(userResult.followers,
