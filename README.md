@@ -7,6 +7,14 @@
 
 Blog version 2.
 
+<p>Adding this new features:</p>
+<ul>
+<li>Email confirm registration</li>
+<li>Add user photo and post cover image</li>
+<li></li>
+<li></li>
+</ul>
+
 ## Installation
 
 ```bash
