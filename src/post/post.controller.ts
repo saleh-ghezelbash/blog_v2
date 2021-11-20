@@ -1,4 +1,4 @@
-import { Response, Body, Controller, Delete, Get, Header, Param, Post, Put, UploadedFile, UseFilters, UseGuards, UseInterceptors, ValidationPipe, Query } from '@nestjs/common';
+import { Response, Body, Controller, Delete, Get, Header, Param, Post, Put, UploadedFile, UseFilters, UseGuards, UseInterceptors, ValidationPipe, Query, Req } from '@nestjs/common';
 import { PostService } from './post.service';
 import { Post as PostEntity } from './post.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -12,34 +12,45 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response as Res } from 'express';
+import { Request, Response as Res } from 'express';
 import { SearchPostDto } from './dtos/search-post.dto';
+import { diskStorage } from 'multer';
+import { Helper } from 'src/shared/helper';
 
 @Controller('post')
 // @UseFilters(new HttpExceptionFilter())
 export class PostController {
     constructor(private readonly postService: PostService) { }
 
-    
+
 
     // @UsePipes(new ValidationPipe({groups:['create']}))
     @Post()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(UserRoleEnum.PUBLISHER, UserRoleEnum.ADMIN)
-    @UseInterceptors(FileInterceptor('imageCover'))
+    @UseInterceptors(FileInterceptor('imageCover', {
+        storage: diskStorage({
+            destination: Helper.imageCoverDestinationPath,
+            filename: Helper.imageCoverCustomFileName
+        }),
+        fileFilter: Helper.multerFilter,
+    }))
     create(
-        @Body(new ValidationPipe({whitelist: true})) createPostDto: CreatePostDto,
+        @Body(new ValidationPipe({ whitelist: true })) createPostDto: CreatePostDto,
         @GetUser() user: User,
-        // @UploadedFile() file: Express.Multer.File
+        @UploadedFile() file: Express.Multer.File,
+        @Req() req: Request,
     ): Promise<PostEntity> {
+        // createPostDto.categoryId = 1;
         return this.postService.create(
             createPostDto,
             user,
-            // file
+            file,
+            req
         );
     }
 
-        
+
 
     // @Get('most-popular-post')
     // mostPopularPosts(){
@@ -47,8 +58,7 @@ export class PostController {
     // }
 
     @Get()
-    findAll(@Query(new ValidationPipe()) filters: SearchPostDto)
-    {
+    findAll(@Query(new ValidationPipe()) filters: SearchPostDto) {
         return this.postService.findAll(filters);
     }
 
@@ -57,13 +67,6 @@ export class PostController {
         return this.postService.findOne(id);
     }
 
-    @Get(':id/image')
-    // @Header('Content-Type','image/*')
-    findPostImage(@Param('id') id: string,
-        @Response() res: Res
-    ) {
-        return this.postService.findPostImage(id, res);
-    }
 
     @Delete(':id')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -76,16 +79,31 @@ export class PostController {
     @Put()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(UserRoleEnum.PUBLISHER, UserRoleEnum.ADMIN)
+    @UseInterceptors(FileInterceptor('imageCover', {
+        storage: diskStorage({
+            destination: Helper.imageCoverDestinationPath,
+            filename: Helper.imageCoverCustomFileName
+        }),
+        fileFilter: Helper.multerFilter,
+    }))
     update(
-        @Body(new ValidationPipe({whitelist: true})) updatePostDto: UpdatePostDto,
-        @GetUser() user: User
+        // @Body() updatePostDto: UpdatePostDto,
+        @Body(new ValidationPipe({ whitelist: true })) updatePostDto: UpdatePostDto,
+        @GetUser() user: User,
+        @UploadedFile() file: Express.Multer.File,
+        @Req() req: Request,
     ) {
+        
+        // updatePostDto.id = 19;
+        // updatePostDto.categoryId = 1;
         return this.postService.update(
             updatePostDto,
-            user
+            user,
+            file,
+            req
         );
     }
-    
+
 
     @Post(':postId/comment')
     @UseGuards(AuthGuard('jwt'))
@@ -102,7 +120,7 @@ export class PostController {
         );
     }
 
-  
+
 
     @Get(':id/relatedPost')
     relatedPost(@Param('id') id: string): Promise<PostEntity[]> {
@@ -121,7 +139,7 @@ export class PostController {
             user
         );
     }
-    
+
 
     @Put(':postId/dislike')
     @UseGuards(AuthGuard('jwt'))
@@ -156,11 +174,11 @@ export class PostController {
     getComments(
         @Param('postId') postId,
         @Query('commentId') commentId
-    ){
-        return this.postService.getComments(postId,commentId);
+    ) {
+        return this.postService.getComments(postId, commentId);
     }
 
-  
+
 }
 
 

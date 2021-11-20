@@ -21,7 +21,7 @@ export class UserService {
     // return this.usersRepository.find();
     return await this.usersRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.posts', 'post')
-      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following', 'user.photo','post.id', 'post.title', 'post.slug', 'post.createdAt'])
+      .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.followers', 'user.following', 'user.photo','post.id', 'post.title',  'post.createdAt'])
       .getMany();
   }
 
@@ -33,7 +33,7 @@ export class UserService {
     //   .leftJoinAndSelect('post.comments', 'comment')
     //   // .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
     //   .andWhere('user.id = :id', { id })
-    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.createdAt', 'comment'])
     //   .getOne()
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
@@ -44,7 +44,7 @@ export class UserService {
 
     const postsQuery = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 
@@ -117,7 +117,7 @@ export class UserService {
         .leftJoinAndSelect('user.posts', 'post')
         .leftJoinAndSelect('post.comments', 'comment')
         .andWhere('user.id = :id', { id: updateUserDto.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.photo', 'post.id', 'post.title', 'post.slug', 'post.createdAt', 'comment'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe','user.photo', 'post.id', 'post.title',  'post.createdAt', 'comment'])
         .getOne()
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -129,7 +129,7 @@ export class UserService {
     // return await this.usersRepository.createQueryBuilder('user')
     //   .leftJoinAndSelect('user.posts', 'post')
     //   .andWhere('user.id = :id', { id })
-    //   .select(['user.id', 'user.name', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+    //   .select(['user.id', 'user.name', 'post.id', 'post.title',  'post.createdAt'])
     //   .getOne();
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
@@ -140,7 +140,7 @@ export class UserService {
 
     const postsQuery = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 
@@ -216,7 +216,7 @@ export class UserService {
       return await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .andWhere('user.id = :id', { id: user.id.toString() })
-        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.photo', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+        .select(['user.id', 'user.name', 'user.email', 'user.role', 'user.aboutMe', 'user.photo', 'post.id', 'post.title', 'post.createdAt'])
         .getOne();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -234,7 +234,7 @@ export class UserService {
     // return await this.usersRepository.createQueryBuilder('user')
     //   .leftJoinAndSelect('user.posts', 'post')
     //   .andWhere('user.id = :id', { id: user.id.toString() })
-    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title', 'post.slug', 'post.createdAt'])
+    //   .select(['user.id', 'user.name', 'user.email', 'user.role', 'post.id', 'post.title',  'post.createdAt'])
     //   .getOne();
 
     const userResult = await this.usersRepository.createQueryBuilder('user')
@@ -251,7 +251,7 @@ export class UserService {
 
     const postsQuery = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user', 'user.id = :userId', { userId: user.id.toString() })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 

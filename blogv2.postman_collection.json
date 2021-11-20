@@ -24,6 +24,28 @@
 								"api",
 								"v1",
 								"post"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "fields[0]",
+									"value": null,
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -37,7 +59,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QzQGdtYWlsLmNvbSIsImlhdCI6MTYzNTc4NTYwNywiZXhwIjoxNjM1OTU4NDA3fQ.ms02dykL0HTIFGgBq8EugtWzy8NWFAv5KPobGI6IJ1k",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzQzMjI3NSwiZXhwIjoxNjM3NjA1MDc1fQ.LFsYUMCIEedP3h4mJhIjaX3GOWQb61JjugWT7nL-0Rk",
 									"type": "string"
 								}
 							]
@@ -45,8 +67,35 @@
 						"method": "POST",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\":\"post23\",\r\n    \"content\":\"desc5wwwwwwwwwwwwwwwww\",\r\n    \"imageCover\":\"image2\",\r\n    \"categoryId\":1,\r\n    \"tagIds\":[1]\r\n}",
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "post36",
+									"type": "text"
+								},
+								{
+									"key": "content",
+									"value": "testtttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+									"type": "text"
+								},
+								{
+									"key": "imageCover",
+									"type": "file",
+									"src": "/C:/Users/Saleh/Desktop/images/paszamine_com_1906_Full_HD.jpg"
+								},
+								{
+									"key": "tagIds[]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "categoryId",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								}
+							],
 							"options": {
 								"raw": {
 									"language": "json"
@@ -75,7 +124,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/post/15",
+							"raw": "http://localhost:9000/api/v1/post/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -85,7 +134,7 @@
 								"api",
 								"v1",
 								"post",
-								"15"
+								"1"
 							]
 						}
 					},
@@ -131,7 +180,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1laHJhbkBnbWFpbC5jb20iLCJpYXQiOjE2MzU1MjE1NzgsImV4cCI6MTYzNTY5NDM3OH0.6_puGNk0ddjPgwoRYA-tsCNMkFzhtKIWneU69D8dLKs",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzQzMjI3NSwiZXhwIjoxNjM3NjA1MDc1fQ.LFsYUMCIEedP3h4mJhIjaX3GOWQb61JjugWT7nL-0Rk",
 									"type": "string"
 								}
 							]
@@ -139,8 +188,40 @@
 						"method": "PUT",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id\": 18,\r\n    \"title\":\"post22.2\",\r\n    \"content\":\"desc2.1\",\r\n    \"imageCover\":\"image2\",\r\n    \"categoryId\":1,\r\n    \"tagIds\":[1]\r\n}\r\n",
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "19",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "31",
+									"type": "text"
+								},
+								{
+									"key": "content",
+									"value": "yyyyyyyyyyyyyyyyyyyyyyyyy",
+									"type": "text"
+								},
+								{
+									"key": "imageCover",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "tagIds[]",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "categoryId",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								}
+							],
 							"options": {
 								"raw": {
 									"language": "json"
@@ -169,7 +250,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/post/18/relatedPost",
+							"raw": "http://localhost:9000/api/v1/post/1/relatedPost",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -179,8 +260,119 @@
 								"api",
 								"v1",
 								"post",
-								"18",
+								"1",
 								"relatedPost"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get post image cover",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/post/1/image",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"1",
+								"image"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Like post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/post/3/like",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"3",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dislike post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/post/3/dislike",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"3",
+								"dislike"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Most popular post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/post/most-popular-post",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"most-popular-post"
 							]
 						}
 					},
@@ -291,7 +483,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/category/5",
+							"raw": "http://localhost:9000/api/v1/category/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -301,7 +493,29 @@
 								"api",
 								"v1",
 								"category",
-								"5"
+								"1"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "fields[0]",
+									"value": null,
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -422,7 +636,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/tag/3",
+							"raw": "http://localhost:9000/api/v1/tag/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -432,7 +646,29 @@
 								"api",
 								"v1",
 								"tag",
-								"3"
+								"1"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "fields[0]",
+									"value": null,
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -451,7 +687,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QzQGdtYWlsLmNvbSIsImlhdCI6MTYzNTc4NTYwNywiZXhwIjoxNjM1OTU4NDA3fQ.ms02dykL0HTIFGgBq8EugtWzy8NWFAv5KPobGI6IJ1k",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzMzMjgzMywiZXhwIjoxNjM3NTA1NjMzfQ.Plc-RI-UGZUpemEmSl0aQUbzDrc3qWkNZbkuPLKrBaM",
 									"type": "string"
 								}
 							]
@@ -463,13 +699,18 @@
 							"urlencoded": [
 								{
 									"key": "content",
-									"value": "test",
+									"value": "test1",
+									"type": "text"
+								},
+								{
+									"key": "parent_id",
+									"value": "19",
 									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "http://localhost:9000/api/v1/post/22/comment",
+							"raw": "http://localhost:9000/api/v1/post/14/comment",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -479,7 +720,7 @@
 								"api",
 								"v1",
 								"post",
-								"22",
+								"14",
 								"comment"
 							]
 						}
@@ -611,6 +852,37 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get post comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/post/3/comment/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"3",
+								"comment",
+								""
+							],
+							"query": [
+								{
+									"key": "commentId",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -625,7 +897,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1laHJhbkBnbWFpbC5jb20iLCJpYXQiOjE2MzU2MTI1OTYsImV4cCI6MTYzNTc4NTM5Nn0.hJWhAU7Ad2seu-igUgV53b7gmwZtlG58ecDb9Y-fyxY",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
 									"type": "string"
 								}
 							]
@@ -656,7 +928,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1laHJhbkBnbWFpbC5jb20iLCJpYXQiOjE2MzU2MTI1OTYsImV4cCI6MTYzNTc4NTM5Nn0.hJWhAU7Ad2seu-igUgV53b7gmwZtlG58ecDb9Y-fyxY",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
 									"type": "string"
 								}
 							]
@@ -664,7 +936,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/user/3",
+							"raw": "http://localhost:9000/api/v1/user/4",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -674,7 +946,7 @@
 								"api",
 								"v1",
 								"user",
-								"3"
+								"4"
 							]
 						}
 					},
@@ -683,10 +955,20 @@
 				{
 					"name": "Delete user",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzMzMjgzMywiZXhwIjoxNjM3NTA1NjMzfQ.Plc-RI-UGZUpemEmSl0aQUbzDrc3qWkNZbkuPLKrBaM",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/user/1",
+							"raw": "http://localhost:9000/api/v1/user/13",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -696,7 +978,7 @@
 								"api",
 								"v1",
 								"user",
-								"1"
+								"13"
 							]
 						}
 					},
@@ -704,13 +986,16 @@
 				},
 				{
 					"name": "Update user",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QzQGdtYWlsLmNvbSIsImlhdCI6MTYzNTc4NTYwNywiZXhwIjoxNjM1OTU4NDA3fQ.ms02dykL0HTIFGgBq8EugtWzy8NWFAv5KPobGI6IJ1k",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzM0MDg2NSwiZXhwIjoxNjM3NTEzNjY1fQ.PIE0iVYkidWnwwMAIqfzOjGS3uFUuhqhstuTeDgqMXA",
 									"type": "string"
 								}
 							]
@@ -719,7 +1004,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\":10,\r\n    \"name\":\"saleh1\",\r\n    \"role\":\"نویسنده\"\r\n}",
+							"raw": "{\r\n    \"id\":10,\r\n    \"name\":\"saleh4.1\",\r\n    \"role\":\"نویسنده\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -807,12 +1092,12 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "test3@gmail.com",
+									"value": "saleh@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "12345678",
+									"value": "123456",
 									"type": "text"
 								}
 							]
@@ -986,6 +1271,29 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Confirm email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/auth/confirmemail/4eddb7cd1ffa2a3c27b126e054ab50a2a11c20535c5409789ec29bdfaedbf765",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"confirmemail",
+								"4eddb7cd1ffa2a3c27b126e054ab50a2a11c20535c5409789ec29bdfaedbf765"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -998,7 +1306,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9000/api/v1/profile/3",
+							"raw": "http://localhost:9000/api/v1/profile/6?search&sortBy&fields[0]&page",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1008,7 +1316,25 @@
 								"api",
 								"v1",
 								"profile",
-								"3"
+								"6"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": null
+								},
+								{
+									"key": "sortBy",
+									"value": null
+								},
+								{
+									"key": "fields[0]",
+									"value": null
+								},
+								{
+									"key": "page",
+									"value": null
+								}
 							]
 						}
 					},
@@ -1053,7 +1379,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1laHJhbkBnbWFpbC5jb20iLCJpYXQiOjE2MzU2MTI1OTYsImV4cCI6MTYzNTc4NTM5Nn0.hJWhAU7Ad2seu-igUgV53b7gmwZtlG58ecDb9Y-fyxY",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNzM0MDg2NSwiZXhwIjoxNjM3NTEzNjY1fQ.PIE0iVYkidWnwwMAIqfzOjGS3uFUuhqhstuTeDgqMXA",
 									"type": "string"
 								}
 							]
@@ -1061,11 +1387,23 @@
 						"method": "PUT",
 						"header": [],
 						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
+							"mode": "formdata",
+							"formdata": [
 								{
 									"key": "name",
-									"value": "mehran",
+									"value": "saleh gh1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "photo",
+									"type": "file",
+									"src": "/C:/Users/Saleh/Desktop/images/download (3).jpg",
+									"disabled": true
+								},
+								{
+									"key": "aboutMe",
+									"value": "ab",
 									"type": "text"
 								}
 							]
@@ -1112,6 +1450,72 @@
 								"api",
 								"v1",
 								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Follow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/profile/7/follow",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"7",
+								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unfollow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbGVoQGdtYWlsLmNvbSIsImlhdCI6MTYzNjgyODQyNiwiZXhwIjoxNjM3MDAxMjI2fQ.f7KxL5p5KqL8DyKxmUyysA-o1ZwiGdJty8b6i1Mdeos",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9000/api/v1/profile/7/unfollow",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"7",
+								"unfollow"
 							]
 						}
 					},

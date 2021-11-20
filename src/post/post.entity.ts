@@ -14,8 +14,8 @@ export class Post {
     @Column()
     title: string;
 
-    @Column()
-    slug: string;
+    // @Column()
+    // slug: string;
 
     @Column()
     content: string;
@@ -61,13 +61,16 @@ export class Post {
     @BeforeInsert()
     beforeIn(){
       
-      this.slug = slugify(this.title,{lower:true});
+      // this.slug = slugify(this.title,{lower:true});
       this.createdAt = new Date();
     }
 
     @BeforeUpdate()
     beforeUp(){
-      this.slug = slugify(this.title,{lower:true});
+      // if (this.title) {
+        
+      //   this.slug = slugify(this.title,{lower:true});
+      // }
       this.modifiedAt = new Date();
     }
 

@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Request } from 'express';
 import slugify from 'slugify';
 import { Bookmark } from 'src/bookmark/bookmark.entity';
 import { Cat } from 'src/category/category.entity';
@@ -50,14 +51,14 @@ export class PostService {
 
     // return await this.postsRepository.createQueryBuilder('post')
     //   .leftJoinAndSelect('post.user', 'user')
-    //   .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
+    //   .select(['post.id', 'post.title',  'post.content', 'post.createdAt','user.id', 'user.name'])
     //   .loadRelationCountAndMap('post.commentCount', 'post.comments')
     //   .orderBy('post.createdAt', 'DESC')
     //   .getMany();
 
     const q = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes', 'user.id', 'user.name'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover', 'post.likes', 'post.disLikes', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 
@@ -117,7 +118,7 @@ export class PostService {
       .leftJoinAndSelect('post.comments', 'comment', 'comment.isApproved = :isApproved', { isApproved: true })
       .leftJoinAndSelect('comment.user', 'commentUser')
       .andWhere('post.id = :id', { id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.imageCover', 'post.likes', 'post.disLikes', 'user.id', 'user.name', 'user.aboutMe'
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt', 'post.imageCover', 'post.likes', 'post.disLikes', 'user.id', 'user.name', 'user.aboutMe'
         , 'cat.id', 'cat.title', 'tag.id', 'tag.title', 'comment.id', 'comment.content', 'comment.createdAt',
         'commentUser.id', 'commentUser.name'
       ])
@@ -125,28 +126,7 @@ export class PostService {
       .getOne()
   }
 
-  async findPostImage(id: string, res) {
-    let photo = await this.postsRepository.findOne(id, { select: ['imageCover'] });
 
-    // return photo
-    // return 'data:image/jpeg;base64,' + photo.imageCover
-    // const img_base64 = 'dataimage/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
-
-
-    // Extract image data
-    const m = /^data:(.+?);base64,(.+)$/.exec(photo.imageCover)
-    // const m = /^data:(.+?);base64,(.+)$/.exec(img_base64)
-    if (!m) throw new Error(`Not a base64 image [${photo.imageCover}]`)
-    const [_, content_type, file_base64] = m
-    const file = Buffer.from(file_base64, 'base64')
-
-    res.writeHead(200, {
-      'Content-Type': content_type,
-      'Content-Length': file.length
-    });
-    res.end(file);
-    // return file
-  }
 
   // async create(
   //     createPostDto: CreatePostDto,
@@ -165,19 +145,17 @@ export class PostService {
   //         // user,
   //         category: cat,
   //         tags: tag,
-  //         slug : slugify(createPostDto.title,{lower:true})
   //     });
   // }
 
   async create(
     createPostDto: CreatePostDto,
     user: User,
-    // file: Express.Multer.File
+    file: Express.Multer.File,
+    req: Request,
   ): Promise<Post> {
 
-    // if (file.size > 1000000) {
-    //   throw new BadRequestException('Maximom valid image size is 1Mb!')
-    // }
+   
 
     if (await this.postsRepository.findOne({ where: { title: createPostDto.title } })) {
       throw new BadRequestException("Post Title must be unique!")
@@ -186,6 +164,10 @@ export class PostService {
     const cat = await this.catRepository.findOne(createPostDto.categoryId);
     if (!cat) {
       throw new NotFoundException("Category not Found!");
+    }
+
+    if (!!file && file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
     }
 
     try {
@@ -198,14 +180,21 @@ export class PostService {
       // createPostDto.tagIds.forEach(async t => {
       //         tags.push(await this.tagRepository.findOne(t.toString()));
       //     })
+
+      let photoFullPath = "";
+      if (!!file) {
+         photoFullPath =`${req.protocol}://${req.get('host')}/images/posts/photos/${file.filename}`;
+      }
+      // else{
+      //   photoFullPath = us.photo;
+      // }
+
       const p = this.postsRepository.create(createPostDto);
 
       p.category = cat;
       p.tags = tags;
       p.user = user;
-      // p.imageCover = file.buffer;
-      // var bufferBase64 = Buffer.from(file.buffer).toString('base64');
-      // p.imageCover = bufferBase64;
+      p.imageCover = photoFullPath;
 
       const post = await this.postsRepository.save(p);
 
@@ -241,9 +230,11 @@ export class PostService {
 
   async update(
     updatePostDto: UpdatePostDto,
-    user: User
+    user: User,
+    file: Express.Multer.File,
+    req: Request
   ) {
-
+    
     const p = await this.findOne(updatePostDto.id.toString());
 
     if (!p) {
@@ -254,13 +245,21 @@ export class PostService {
       throw new UnauthorizedException("You are not own this Post!");
     }
 
-    if (await this.postsRepository.findOne({ where: { title: updatePostDto.title } })) {
+    
+    if (updatePostDto.title) {
+     const postTitle = await this.postsRepository.findOne({ where: { title: updatePostDto.title } });
+     if (postTitle && (postTitle.id != updatePostDto.id)) {
       throw new BadRequestException("Post Title must be unique!")
-    }
+     }
+    } 
 
     const cat = await this.catRepository.findOne(updatePostDto.categoryId);
     if (!cat) {
       throw new NotFoundException("Category not Found!");
+    }
+
+    if (!!file && file.size > 1000000) {
+      throw new BadRequestException('Maximom valid image size is 1Mb!')
     }
 
     try {
@@ -269,9 +268,18 @@ export class PostService {
       // .where("tag.id IN (:...ids)", { ids:updatePostDto.tagIds })
       // .getMany();
 
+      let photoFullPath = "";
+      if (!!file) {
+         photoFullPath =`${req.protocol}://${req.get('host')}/images/posts/photos/${file.filename}`;
+      }
+      else{
+        photoFullPath = p.imageCover;
+      }
+
       const post = this.postsRepository.create(updatePostDto);
       post.category = cat;
       post.tags = tags;
+      post.imageCover = photoFullPath;
 
       await this.postsRepository.save(post);
 
@@ -339,7 +347,7 @@ export class PostService {
     return this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.category', 'cat')
       .andWhere('cat.id = :id', { id: post.category.id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover', 'post.likes', 'post.disLikes'])
       .limit(5)
       .getMany();
   }
@@ -402,7 +410,7 @@ export class PostService {
   async mostPopularPosts() {
 
     let m = await this.postsRepository.createQueryBuilder('post')
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'post.likes', 'post.disLikes'])
+      .select(['post.id', 'post.title',  'post.content', 'post.createdAt','post.imageCover', 'post.likes', 'post.disLikes'])
       .getMany();
 
     return m.sort((a, b) => {
@@ -444,7 +452,7 @@ export class PostService {
       .leftJoinAndSelect('comment.post','post')
       .leftJoinAndSelect('comment.parent','parent')
       .leftJoinAndSelect('comment.user','user')
-      .select(['comment','post.id','post.title','post.slug','post.createdAt','parent','user.id','user.name','user.photo'])
+      .select(['comment','post.id','post.title','post.createdAt','parent','user.id','user.name','user.photo'])
       .where('post.id = :postId',{postId})
       .andWhere('parent.id IS NULL')
       .andWhere('comment.isApproved = :isApproved', { isApproved: true })
@@ -454,7 +462,7 @@ export class PostService {
       .leftJoinAndSelect('comment.post','post')
       .leftJoinAndSelect('comment.parent','parent')
       .leftJoinAndSelect('comment.user','user')
-      .select(['comment','post.id','post.title','post.slug','post.createdAt','parent','user.id','user.name','user.photo'])
+      .select(['comment','post.id','post.title','post.createdAt','parent','user.id','user.name','user.photo'])
       .where('post.id = :postId',{postId})
       .andWhere('parent.id = :parentId',{parentId:commentId})
       .andWhere('comment.isApproved = :isApproved', { isApproved: true })

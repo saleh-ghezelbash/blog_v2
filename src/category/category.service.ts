@@ -48,14 +48,14 @@ export class CategoryService {
     // .leftJoinAndSelect('cat.posts','post')
     // .leftJoinAndSelect('post.user', 'user')
     // .andWhere('cat.id = :id', { id })
-    // .select(['cat','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
+    // .select(['cat','post.id', 'post.title',  'post.content', 'post.createdAt','user.id', 'user.name'])
     // .getOne();
 
     const cat = await this.categoriesRepository.createQueryBuilder('cat')
       // .leftJoinAndSelect('cat.posts','post')
       // .leftJoinAndSelect('post.user', 'user')
       .andWhere('cat.id = :id', { id })
-      // .select(['cat','post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt','user.id', 'user.name'])
+      // .select(['cat','post.id', 'post.title',  'post.content', 'post.createdAt','user.id', 'user.name'])
       .getOne();
 
 
@@ -63,7 +63,7 @@ export class CategoryService {
     const postsQuery = await this.postsRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.category', 'cat', 'cat.id = :catId', { catId: id })
-      .select(['post.id', 'post.title', 'post.slug', 'post.content', 'post.createdAt', 'user.id', 'user.name'])
+      .select(['post.id', 'post.title', 'post.content', 'post.createdAt','post.imageCover', 'user.id', 'user.name'])
       .loadRelationCountAndMap('post.commentCount', 'post.comments')
       .orderBy('post.createdAt', 'DESC')
 

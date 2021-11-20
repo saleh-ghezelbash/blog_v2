@@ -14,8 +14,8 @@ export class CreatePostDto{
     @MaxLength(2000,{message:"Maximom characters for Content is 2000!"})
     content:string;
 
-    // imageCover:Buffer;
-    imageCover:string;
+    
+    // imageCover:string;
 
     @IsNotEmpty()
     categoryId: number;

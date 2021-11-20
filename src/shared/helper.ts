@@ -17,4 +17,13 @@ export class Helper {
     static userProfileDestinationPath(req, file, cb) {
         cb(null, './files/images/users/photos')
     }
+
+    static imageCoverCustomFileName(req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
+        cb(null, `post-${req.user.id}-${Date.now()}.${ext}`);
+    }
+
+    static imageCoverDestinationPath(req, file, cb) {
+        cb(null, './files/images/posts/photos')
+    }
 }
